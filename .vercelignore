@@ -1,0 +1,9 @@
+db
+docs
+test
+.agents
+.claude
+.idea
+docker-compose.yml
+docker-compose.prod-db.yml
+Dockerfile

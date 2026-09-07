@@ -10,6 +10,7 @@ export function createAuth(db: Database, config: Config) {
   return betterAuth({
     appName: 'TimeReport',
     baseURL: config.BETTER_AUTH_URL,
+    trustedOrigins: config.trustedOrigins,
     basePath: '/api/auth/better-auth',
     secret: config.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {

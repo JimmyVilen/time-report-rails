@@ -1,5 +1,6 @@
 drizzle/meta/
-dist/
+.output/
+.vercel/
 src/routeTree.gen.ts
 
 # Application UI code predates Prettier in this repo (it lived in Frontend/,
