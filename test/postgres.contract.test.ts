@@ -21,6 +21,7 @@ suite('PostgreSQL contracts', () => {
       BETTER_AUTH_URL: 'http://localhost',
       NODE_ENV: 'test',
       PORT: 3000,
+      trustedOrigins: [],
     }
     const auth = createAuth(database.db, config)
     app = createApp({ db: database.db, auth })

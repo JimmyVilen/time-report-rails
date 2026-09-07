@@ -1,8 +1,13 @@
 import { z } from 'zod'
 
+// Migrations take DDL locks and run in a single session, so they want a direct
+// or session-mode connection. The app itself may be pointed at a transaction
+// -mode pooler, which is why MIGRATION_DATABASE_URL takes precedence when set.
 export function productionDatabaseUrl(): string {
-  const value = process.env['DATABASE_URL']
-  if (!value) throw new Error('DATABASE_URL is required')
+  const value =
+    process.env['MIGRATION_DATABASE_URL'] ?? process.env['DATABASE_URL']
+  if (!value)
+    throw new Error('MIGRATION_DATABASE_URL or DATABASE_URL is required')
   return validatePostgresUrl(value)
 }
 

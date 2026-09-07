@@ -9,7 +9,8 @@ Time reporting app built as a single TanStack Start application with a Hono API.
 - **Data**: Drizzle ORM, PostgreSQL
 - **Auth**: Better Auth, BCrypt and HttpOnly/SameSite=Lax cookie sessions
 - **UI**: Tailwind CSS v4, TanStack Query, Lexical
-- **Deploy**: Single non-root Node container
+- **Build**: Nitro, which targets Vercel and a plain Node server from one build
+- **Deploy**: Vercel (production + per-branch previews), or a non-root container
 
 ## Architecture
 
@@ -53,7 +54,8 @@ served from the same origin.
 ### Environment
 
 `.env` configures the Node process (`DATABASE_URL`, `BETTER_AUTH_SECRET`,
-`BETTER_AUTH_URL`, `NODE_ENV`, `PORT`). Vite deliberately does **not** read it —
+`BETTER_AUTH_URL`, `NODE_ENV`, `PORT`; the last two are optional, and hosted
+deployments supply their own — see [Vercel](#vercel)). Vite deliberately does **not** read it —
 `vite.config.ts` points `envDir` at the empty `env/` directory, because a
 `NODE_ENV=development` line in `.env` would otherwise make `vite build` emit a
 development bundle. Client-side `VITE_*` variables, if ever needed, belong in
@@ -62,9 +64,13 @@ development bundle. Client-side `VITE_*` variables, if ever needed, belong in
 ### Building for Production
 
 ```bash
-npm run build   # -> dist/client and dist/server
-npm start       # serve.js serves dist/client and delegates to dist/server
+npm run build   # -> .output (Nitro picks its preset from the environment)
+npm start       # node .output/server/index.mjs
 ```
+
+Nitro chooses the preset at build time: `vercel` when `VERCEL` is set (output in
+`.vercel/output`), otherwise `node-server`, whose `.output/` is self-contained —
+server, bundled dependencies and static assets, no `npm install` needed to run it.
 
 ### Docker
 
@@ -72,6 +78,29 @@ npm start       # serve.js serves dist/client and delegates to dist/server
 BETTER_AUTH_SECRET="replace-with-at-least-32-random-characters" docker compose up --build
 # App available at http://localhost:8080
 ```
+
+### Vercel
+
+The Vercel project builds from GitHub: `main` deploys to production, every other
+branch gets a preview. Deploying needs no build configuration — Vercel detects
+TanStack Start and Nitro — but the project must set:
+
+| Variable                 | Scope              | Notes                                          |
+| ------------------------ | ------------------ | ---------------------------------------------- |
+| `DATABASE_URL`           | Production/Preview | Supabase **transaction** pooler (port 6543)    |
+| `MIGRATION_DATABASE_URL` | Production         | Session pooler (port 5432); migrations need it |
+| `BETTER_AUTH_SECRET`     | Production/Preview | A different secret per environment             |
+| `MIGRATE_ON_DEPLOY`      | Preview (optional) | `true` migrates a dedicated preview database   |
+
+Do not set `PORT` or `BETTER_AUTH_URL` on Vercel. `PORT` is only used by the
+standalone Node server, and the auth URL is derived per deployment: previews
+follow their own hostname, production uses the project's production domain, and
+both trust the branch alias (see `resolveAuthUrl` in `src/server/config.ts`).
+Every preview shares that project's `DATABASE_URL`, so point it at a database
+that is not production.
+
+Migrations run from `vercel-build` before the app is built, and only for the
+production deployment unless `MIGRATE_ON_DEPLOY=true` opts an environment in.
 
 ## Checks
 

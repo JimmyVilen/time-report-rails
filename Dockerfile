@@ -7,16 +7,13 @@ RUN npm ci
 COPY . ./
 RUN npm run build
 
-FROM build AS prune
-RUN npm prune --omit=dev
-
+# Nitro's node-server output is self-contained: the server, its bundled runtime
+# dependencies and the static assets all live under .output, so the image needs
+# no package.json and no node_modules.
 FROM node:24-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production PORT=8080
-COPY --chown=node:node --from=prune /build/package*.json ./
-COPY --chown=node:node --from=prune /build/node_modules ./node_modules
-COPY --chown=node:node --from=prune /build/dist ./dist
-COPY --chown=node:node --from=prune /build/serve.js ./serve.js
+COPY --chown=node:node --from=build /build/.output ./.output
 USER node
 EXPOSE 8080
-CMD ["node", "serve.js"]
+CMD ["node", ".output/server/index.mjs"]
