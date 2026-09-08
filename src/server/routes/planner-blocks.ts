@@ -19,12 +19,16 @@ const bodySchema = z.object({
   color: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
 })
+// PostgreSQL serialises `timestamp` columns with a space between date and
+// clock. The UI splits on `T`, so hand out ISO-8601 local date-times.
+const localDateTimeOut = (value: string | null) =>
+  value?.replace(' ', 'T') ?? null
 const dto = (b: typeof plannerBlocks.$inferSelect) => ({
   id: b.id,
   title: b.title,
   date: b.date,
-  startTime: b.startTime,
-  endTime: b.endTime,
+  startTime: localDateTimeOut(b.startTime),
+  endTime: localDateTimeOut(b.endTime),
   color: b.color,
   notes: b.notes,
   createdAt: iso(b.createdAt),
@@ -60,6 +64,8 @@ export function plannerBlockRoutes(db: Database) {
   app.post('/', async (c) => {
     const body = bodySchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) return c.json({ error: 'Invalid request' }, 400)
+    if (!body.data.title.trim())
+      return c.json({ error: 'Title is required' }, 400)
     const [row] = await db
       .insert(plannerBlocks)
       .values({
@@ -80,6 +86,8 @@ export function plannerBlockRoutes(db: Database) {
     const body = bodySchema.safeParse(await c.req.json().catch(() => null))
     if (!id.success || !body.success)
       return c.json({ error: 'Invalid request' }, 400)
+    if (!body.data.title.trim())
+      return c.json({ error: 'Title is required' }, 400)
     const [row] = await db
       .update(plannerBlocks)
       .set({

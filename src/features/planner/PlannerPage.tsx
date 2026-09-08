@@ -91,6 +91,7 @@ export function PlannerPage() {
   const convertMutation = useMutation({
     mutationFn: (block: PlannerBlock) => createTask({ title: block.title }),
     onSuccess: (_task, block) => {
+      qc.invalidateQueries({ queryKey: ['tasks'] })
       setConvertedId(block.id)
       setTimeout(() => setConvertedId(null), 2000)
     },

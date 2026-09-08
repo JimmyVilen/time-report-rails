@@ -45,6 +45,13 @@ export class JiraError extends Error {
   ) {
     super(message)
   }
+
+  // The status to answer our own client with. A 401 from Jira means the
+  // user's stored Jira credentials are wrong, not that their app session is
+  // invalid, and the UI treats any 401 as a lost session.
+  get responseStatus(): number {
+    return this.status === 401 ? 400 : this.status
+  }
 }
 
 export class JiraClient {

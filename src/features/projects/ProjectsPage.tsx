@@ -109,9 +109,9 @@ export function ProjectsPage() {
         {filtered.map(p => (
           <div key={p.id} className="bg-[var(--background-card)] border border-[var(--border)] rounded-xl p-5 flex flex-col items-start gap-4 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center">
             <div className="flex-1 min-w-0">
-              <a href={`/projects/${p.id}`} className="font-display text-lg font-semibold text-[var(--foreground)] hover:text-[var(--accent)]">
+              <span className="font-display text-lg font-semibold text-[var(--foreground)]">
                 {p.name}
-              </a>
+              </span>
               {p.description && <p className="text-sm text-[var(--foreground-muted)] mt-0.5">{p.description}</p>}
               <div className="flex gap-3 mt-1 text-xs text-[var(--foreground-muted)]">
                 <span>{p.taskCount} uppgifter</span>

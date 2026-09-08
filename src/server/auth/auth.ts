@@ -55,7 +55,10 @@ export function createAuth(db: Database, config: Config) {
       defaultCookieAttributes: {
         httpOnly: true,
         sameSite: 'lax',
-        secure: config.NODE_ENV === 'production',
+        // Follow the public origin, not NODE_ENV: a production build served
+        // over plain HTTP (docker-compose on localhost, an internal host) must
+        // not mark the session cookie Secure or the browser will drop it.
+        secure: config.BETTER_AUTH_URL.startsWith('https://'),
       },
     },
   })
