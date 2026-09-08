@@ -17,10 +17,11 @@ async function request<T>(path: string, opts: FetchOptions = {}): Promise<T> {
     throw new ApiError(body.error ?? `HTTP ${res.status}`, res.status)
   }
 
-  if (res.status === 204 || res.headers.get('content-length') === '0') {
-    return undefined as T
-  }
-  return res.json()
+  // Some endpoints (delete, reorder) reply with an empty body. The
+  // Content-Length header is not guaranteed to be present, so read the
+  // text and only parse it when there is something to parse.
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T
 }
 
 export class ApiError extends Error {
