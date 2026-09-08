@@ -185,7 +185,7 @@ export function LexicalMarkdownEditor({ value, onChange, placeholder, label }: L
         <LexicalComposer initialConfig={initialConfig}>
           <ToolbarPlugin />
           <RichTextPlugin
-            contentEditable={<ContentEditable className="editor-content" />}
+            contentEditable={<ContentEditable className="editor-content" aria-label={label ?? placeholder ?? "Text"} />}
             placeholder={<div className="editor-placeholder">{placeholder}</div>}
             ErrorBoundary={LexicalErrorBoundary}
           />

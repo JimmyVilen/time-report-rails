@@ -216,8 +216,13 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
         {/* Task selector */}
         <div className="relative" ref={containerRef}>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-[var(--foreground-muted)]">Uppgift</label>
+            <label htmlFor="time-entry-task" className="text-sm font-medium text-[var(--foreground-muted)]">Uppgift</label>
             <input
+              id="time-entry-task"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={showDropdown}
+              aria-controls="time-entry-task-options"
               value={taskSearch}
               onChange={e => handleTaskSearchChange(e.target.value)}
               onFocus={handleFocus}
@@ -226,11 +231,13 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
             />
           </div>
           {showDropdown && (filteredTasks.length > 0 || isJiraUrl || taskSearch.length > 1) && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg shadow-lg z-20 overflow-hidden">
+            <div id="time-entry-task-options" role="listbox" className="absolute top-full left-0 right-0 mt-1 bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg shadow-lg z-20 overflow-hidden">
               {filteredTasks.map(t => (
                 <button
                   key={t.id}
                   type="button"
+                  role="option"
+                  aria-selected={t.id === taskId}
                   className="form-list-option w-full text-left px-3 py-2 hover:bg-[var(--background-card-hover)] text-[var(--foreground)] flex items-center gap-2"
                   onMouseDown={() => handleTaskSelect(t)}
                 >
@@ -242,6 +249,8 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
               {isJiraUrl && (
                 <button
                   type="button"
+                  role="option"
+                  aria-selected={false}
                   className="form-list-option w-full text-left px-3 py-2 hover:bg-[var(--background-card-hover)] text-[var(--accent)]"
                   onMouseDown={async () => {
                     setShowDropdown(false)
@@ -261,6 +270,8 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
               {!isJiraUrl && taskSearch.length > 1 && (
                 <button
                   type="button"
+                  role="option"
+                  aria-selected={false}
                   className="form-list-option w-full text-left px-3 py-2 hover:bg-[var(--background-card-hover)] text-[var(--accent)]"
                   onMouseDown={async () => {
                     setShowDropdown(false)
@@ -282,8 +293,9 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-[var(--foreground-muted)]">Start</label>
+            <label htmlFor="time-entry-start" className="text-sm font-medium text-[var(--foreground-muted)]">Start</label>
             <input
+              id="time-entry-start"
               type="time"
               value={startTime}
               onChange={e => handleStartChange(e.target.value)}
@@ -291,8 +303,9 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-[var(--foreground-muted)]">Slut</label>
+            <label htmlFor="time-entry-end" className="text-sm font-medium text-[var(--foreground-muted)]">Slut</label>
             <input
+              id="time-entry-end"
               type="time"
               value={endTime}
               onChange={e => handleEndChange(e.target.value)}
@@ -325,7 +338,7 @@ export function TimeEntryForm({ date, editEntry, onClose }: Props) {
           creating={createTagMutation.isPending}
         />
 
-        {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[var(--danger)]">{error}</p>}
 
         <div className="flex gap-2">
           <Button type="submit" variant="primary" loading={mutation.isPending}>

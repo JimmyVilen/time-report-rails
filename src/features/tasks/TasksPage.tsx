@@ -93,6 +93,7 @@ export function TasksPage() {
 
       <input
         type="search"
+        aria-label="Sök uppgifter"
         placeholder="Sök uppgifter..."
         value={search}
         onChange={e => setSearch(e.target.value)}
@@ -106,8 +107,9 @@ export function TasksPage() {
           <Input label="Beskrivning" value={desc} onChange={e => setDesc(e.target.value)} />
           <Input label="Jira URL" value={jiraUrl} onChange={e => setJiraUrl(e.target.value)} placeholder="https://yourcompany.atlassian.net/browse/PROJ-123" />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-[var(--foreground-muted)]">Projekt</label>
+            <label htmlFor="task-project" className="text-sm font-medium text-[var(--foreground-muted)]">Projekt</label>
             <select
+              id="task-project"
               value={projectId}
               onChange={e => setProjectId(e.target.value ? Number(e.target.value) : '')}
               className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background-card)] text-[var(--foreground)] text-sm"
@@ -127,7 +129,7 @@ export function TasksPage() {
             onCreateAndAdd={async (name) => { try { await createTagMutation.mutateAsync(name) } catch { return } }}
             creating={createTagMutation.isPending}
           />
-          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+          {error && <p role="alert" className="text-sm text-[var(--danger)]">{error}</p>}
           <div className="flex gap-2">
             <Button type="submit" variant="primary" loading={createMutation.isPending || updateMutation.isPending}>
               {editTask ? 'Spara' : 'Skapa'}
@@ -139,7 +141,7 @@ export function TasksPage() {
 
       <div className="flex gap-1 mb-4">
         {(['active', 'archived'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
+          <button key={t} onClick={() => setTab(t)} aria-pressed={tab === t}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               tab === t ? 'bg-[var(--accent)] text-white' : 'text-[var(--foreground-muted)] hover:bg-[var(--background-elevated)]'
             }`}
@@ -152,7 +154,7 @@ export function TasksPage() {
       <div className="flex flex-col gap-2">
         {filtered.length === 0 && <p className="text-sm text-[var(--foreground-muted)] text-center py-8">Inga uppgifter.</p>}
         {filtered.map(t => (
-          <div key={t.id} className="bg-[var(--background-card)] border border-[var(--border)] rounded-xl p-5 flex flex-col items-start gap-3 shadow-[var(--shadow-sm)] sm:flex-row">
+          <div key={t.id} data-testid="task-row" className="bg-[var(--background-card)] border border-[var(--border)] rounded-xl p-5 flex flex-col items-start gap-3 shadow-[var(--shadow-sm)] sm:flex-row">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-display text-lg font-semibold text-[var(--foreground)]">{t.title}</span>
@@ -178,11 +180,11 @@ export function TasksPage() {
                 className={`text-lg leading-none ${t.isFavorite ? 'text-yellow-400' : 'text-[var(--foreground-muted)]'} hover:text-yellow-400 transition-colors`}
                 title={t.isFavorite ? 'Ta bort favorit' : 'Markera som favorit'}
               >★</button>
-              <Button size="sm" variant="ghost" onClick={() => startEdit(t)}>✎</Button>
+              <Button size="sm" variant="ghost" aria-label={`Redigera ${t.title}`} onClick={() => startEdit(t)}>✎</Button>
               {t.isArchived ? (
                 <Button size="sm" variant="ghost" loading={restoreMutation.isPending} onClick={() => restoreMutation.mutate(t.id)}>Återställ</Button>
               ) : (
-                <Button size="sm" variant="ghost" className="hover:text-[var(--danger)]"
+                <Button size="sm" variant="ghost" className="hover:text-[var(--danger)]" aria-label={`Ta bort ${t.title}`}
                   onClick={() => {
                     if (confirm(`Ta bort "${t.title}"?`)) deleteMutation.mutate(t.id)
                   }}

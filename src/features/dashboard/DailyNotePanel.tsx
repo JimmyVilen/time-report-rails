@@ -45,7 +45,7 @@ export function DailyNotePanel({ date }: Props) {
         </svg>
         Notering
         {hasNote && (
-          <span className="inline-block h-2 w-2 rounded-full bg-[var(--accent)]" />
+          <span data-testid="daily-note-indicator" className="inline-block h-2 w-2 rounded-full bg-[var(--accent)]" />
         )}
       </button>
 

@@ -64,7 +64,9 @@ export function BlockModal({ initialData, onSubmit, onClose, isLoading }: Props)
             {initialData?.id ? 'Redigera block' : 'Nytt block'}
           </h2>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Stäng"
             className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] text-lg leading-none"
           >
             ✕
@@ -85,8 +87,9 @@ export function BlockModal({ initialData, onSubmit, onClose, isLoading }: Props)
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[var(--foreground-muted)]">Datum</label>
+              <label htmlFor="planner-block-date" className="text-xs text-[var(--foreground-muted)]">Datum</label>
               <input
+                id="planner-block-date"
                 type="date"
                 value={date}
                 onChange={e => setDate(e.target.value)}
@@ -95,8 +98,9 @@ export function BlockModal({ initialData, onSubmit, onClose, isLoading }: Props)
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[var(--foreground-muted)]">Starttid</label>
+              <label htmlFor="planner-block-start" className="text-xs text-[var(--foreground-muted)]">Starttid</label>
               <input
+                id="planner-block-start"
                 type="time"
                 value={startTime}
                 onChange={e => setStartTime(e.target.value)}
@@ -104,8 +108,9 @@ export function BlockModal({ initialData, onSubmit, onClose, isLoading }: Props)
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[var(--foreground-muted)]">Sluttid</label>
+              <label htmlFor="planner-block-end" className="text-xs text-[var(--foreground-muted)]">Sluttid</label>
               <input
+                id="planner-block-end"
                 type="time"
                 value={endTime}
                 onChange={e => setEndTime(e.target.value)}
@@ -138,7 +143,7 @@ export function BlockModal({ initialData, onSubmit, onClose, isLoading }: Props)
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs text-[var(--foreground-muted)]">Anteckningar (markdown)</label>
+              <label htmlFor="planner-block-notes" className="text-xs text-[var(--foreground-muted)]">Anteckningar (markdown)</label>
               {notes && (
                 <button
                   type="button"
@@ -155,6 +160,7 @@ export function BlockModal({ initialData, onSubmit, onClose, isLoading }: Props)
               </div>
             ) : (
               <textarea
+                id="planner-block-notes"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Lägg till anteckningar..."

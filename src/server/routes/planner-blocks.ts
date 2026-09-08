@@ -19,12 +19,15 @@ const bodySchema = z.object({
   color: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
 })
+// PostgreSQL serialises `timestamp` columns as "YYYY-MM-DD HH:mm:ss"; the UI
+// (and the pre-Hono contract) expect the ISO "T" separator.
+const localIso = (value: string | null) => value?.replace(' ', 'T') ?? null
 const dto = (b: typeof plannerBlocks.$inferSelect) => ({
   id: b.id,
   title: b.title,
   date: b.date,
-  startTime: b.startTime,
-  endTime: b.endTime,
+  startTime: localIso(b.startTime),
+  endTime: localIso(b.endTime),
   color: b.color,
   notes: b.notes,
   createdAt: iso(b.createdAt),

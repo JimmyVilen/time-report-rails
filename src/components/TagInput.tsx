@@ -31,6 +31,7 @@ export function TagInput({ label, selectedTags, availableTags, onAdd, onRemove, 
   const [inputValue, setInputValue] = useState('')
   const [open, setOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const inputId = label ? `tag-input-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined
 
   const selectedIds = new Set(selectedTags.map(t => t.id))
   const term = inputValue.toLowerCase().trim()
@@ -44,7 +45,7 @@ export function TagInput({ label, selectedTags, availableTags, onAdd, onRemove, 
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label className="text-sm font-medium text-[var(--foreground-muted)]">{label}</label>
+        <label htmlFor={inputId} className="text-sm font-medium text-[var(--foreground-muted)]">{label}</label>
       )}
       <div className="relative">
         <div
@@ -70,6 +71,7 @@ export function TagInput({ label, selectedTags, availableTags, onAdd, onRemove, 
           ))}
           <input
             ref={inputRef}
+            id={inputId}
             value={inputValue}
             onChange={e => { setInputValue(e.target.value); setOpen(true) }}
             onFocus={() => setOpen(true)}

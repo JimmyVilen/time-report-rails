@@ -70,7 +70,7 @@ export function ProjectsPage() {
           <h3 className="text-sm font-semibold text-[var(--foreground)]">{editProject ? 'Redigera projekt' : 'Nytt projekt'}</h3>
           <Input label="Namn" value={name} onChange={e => setName(e.target.value)} required autoFocus />
           <Input label="Beskrivning" value={description} onChange={e => setDescription(e.target.value)} />
-          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+          {error && <p role="alert" className="text-sm text-[var(--danger)]">{error}</p>}
           <div className="flex gap-2">
             <Button type="submit" variant="primary" loading={createMutation.isPending || updateMutation.isPending}>
               {editProject ? 'Spara' : 'Skapa'}
@@ -85,6 +85,7 @@ export function ProjectsPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
+            aria-pressed={tab === t}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               tab === t ? 'bg-[var(--accent)] text-white' : 'text-[var(--foreground-muted)] hover:bg-[var(--background-elevated)]'
             }`}
@@ -107,7 +108,7 @@ export function ProjectsPage() {
           <p className="text-sm text-[var(--foreground-muted)] text-center py-8">Inga projekt.</p>
         )}
         {filtered.map(p => (
-          <div key={p.id} className="bg-[var(--background-card)] border border-[var(--border)] rounded-xl p-5 flex flex-col items-start gap-4 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center">
+          <div key={p.id} data-testid="project-row" className="bg-[var(--background-card)] border border-[var(--border)] rounded-xl p-5 flex flex-col items-start gap-4 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center">
             <div className="flex-1 min-w-0">
               <a href={`/projects/${p.id}`} className="font-display text-lg font-semibold text-[var(--foreground)] hover:text-[var(--accent)]">
                 {p.name}
@@ -119,7 +120,7 @@ export function ProjectsPage() {
               </div>
             </div>
             <div className="flex gap-1 shrink-0">
-              <Button size="sm" variant="ghost" onClick={() => startEdit(p)}>✎</Button>
+              <Button size="sm" variant="ghost" aria-label={`Redigera ${p.name}`} onClick={() => startEdit(p)}>✎</Button>
               {p.isArchived ? (
                 <Button size="sm" variant="ghost" loading={unarchiveMutation.isPending} onClick={() => unarchiveMutation.mutate(p.id)}>Återställ</Button>
               ) : (
@@ -129,6 +130,7 @@ export function ProjectsPage() {
                 size="sm"
                 variant="ghost"
                 className="hover:text-[var(--danger)]"
+                aria-label={`Ta bort ${p.name}`}
                 onClick={() => { if (confirm(`Ta bort projektet "${p.name}"?`)) deleteMutation.mutate(p.id) }}
               >✕</Button>
             </div>

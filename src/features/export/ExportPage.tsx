@@ -21,7 +21,8 @@ function lastWeekRange() {
 const dateInputClass = 'rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] focus:border-[var(--accent)] focus:outline-none'
 const labelClass = 'text-xs text-[var(--foreground-muted)]'
 
-function ExportSection({ title, subtitle, from, setFrom, to, setTo, onExport }: {
+function ExportSection({ id, title, subtitle, from, setFrom, to, setTo, onExport }: {
+  id: string
   title: string
   subtitle: string
   from: string
@@ -31,17 +32,17 @@ function ExportSection({ title, subtitle, from, setFrom, to, setTo, onExport }: 
   onExport: () => void
 }) {
   return (
-    <div>
-      <h2 className="mb-1 text-sm font-medium text-[var(--foreground)]">{title}</h2>
+    <section aria-labelledby={`${id}-title`}>
+      <h2 id={`${id}-title`} className="mb-1 text-sm font-medium text-[var(--foreground)]">{title}</h2>
       <p className="mb-4 text-sm text-[var(--foreground-muted)]">{subtitle}</p>
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
-          <label className={labelClass}>Från</label>
-          <input type="date" value={from} onChange={e => setFrom(e.target.value)} required className={dateInputClass} />
+          <label htmlFor={`${id}-from`} className={labelClass}>Från</label>
+          <input id={`${id}-from`} type="date" value={from} onChange={e => setFrom(e.target.value)} required className={dateInputClass} />
         </div>
         <div className="flex flex-col gap-1">
-          <label className={labelClass}>Till</label>
-          <input type="date" value={to} onChange={e => setTo(e.target.value)} required className={dateInputClass} />
+          <label htmlFor={`${id}-to`} className={labelClass}>Till</label>
+          <input id={`${id}-to`} type="date" value={to} onChange={e => setTo(e.target.value)} required className={dateInputClass} />
         </div>
         <button
           type="button"
@@ -54,7 +55,7 @@ function ExportSection({ title, subtitle, from, setFrom, to, setTo, onExport }: 
           Ladda ner CSV
         </button>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -73,6 +74,7 @@ export function ExportPage() {
       <div className="divide-y divide-[var(--border)] rounded-xl border border-[var(--border)] bg-[var(--background-card)] px-6 shadow-[var(--shadow-sm)]">
         <div className="py-7">
           <ExportSection
+            id="export-time-entries"
             title="Tidsrapport"
             subtitle="Exportera tidrapportsposter som CSV"
             from={teFrom} setFrom={setTeFrom}
@@ -82,6 +84,7 @@ export function ExportPage() {
         </div>
         <div className="py-7">
           <ExportSection
+            id="export-notes"
             title="Noteringar"
             subtitle="Exportera dagliga noteringar som CSV"
             from={notesFrom} setFrom={setNotesFrom}

@@ -40,7 +40,7 @@ export function SetupPage() {
           <Input label="E-post" type="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
           <Input label="Lösenord (minst 8 tecken)" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
           <Input label="Bekräfta lösenord" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required />
-          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+          {error && <p role="alert" className="text-sm text-[var(--danger)]">{error}</p>}
           <Button type="submit" variant="primary" size="lg" loading={mutation.isPending} className="mt-2 w-full">Skapa konto</Button>
         </form>
       </div>

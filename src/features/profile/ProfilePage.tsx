@@ -72,8 +72,9 @@ export function ProfilePage() {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Namn</label>
+                <label htmlFor="profile-name" className={labelClass}>Namn</label>
                 <input
+                  id="profile-name"
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
@@ -90,8 +91,9 @@ export function ProfilePage() {
             <p className="mb-4 text-sm text-[var(--foreground-muted)]">Lämna tomt för att behålla befintligt lösenord</p>
             <div className="flex flex-col gap-3 max-w-sm">
               <div>
-                <label className={labelClass}>Nytt lösenord</label>
+                <label htmlFor="profile-password" className={labelClass}>Nytt lösenord</label>
                 <input
+                  id="profile-password"
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -100,8 +102,9 @@ export function ProfilePage() {
                 />
               </div>
               <div>
-                <label className={labelClass}>Bekräfta lösenord</label>
+                <label htmlFor="profile-password-confirm" className={labelClass}>Bekräfta lösenord</label>
                 <input
+                  id="profile-password-confirm"
                   type="password"
                   value={passwordConfirm}
                   onChange={e => setPasswordConfirm(e.target.value)}
@@ -117,8 +120,9 @@ export function ProfilePage() {
             <p className="mb-4 text-sm text-[var(--foreground-muted)]">Anslut ditt Jira-konto för att logga tid direkt från appen</p>
             <div className="flex flex-col gap-3 max-w-sm">
               <div>
-                <label className={labelClass}>Jira-URL</label>
+                <label htmlFor="profile-jira-url" className={labelClass}>Jira-URL</label>
                 <input
+                  id="profile-jira-url"
                   type="url"
                   value={jiraUrl}
                   onChange={e => setJiraUrl(e.target.value)}
@@ -127,8 +131,9 @@ export function ProfilePage() {
                 />
               </div>
               <div>
-                <label className={labelClass}>Jira-e-post</label>
+                <label htmlFor="profile-jira-email" className={labelClass}>Jira-e-post</label>
                 <input
+                  id="profile-jira-email"
                   type="email"
                   value={jiraEmail}
                   onChange={e => setJiraEmail(e.target.value)}
@@ -137,8 +142,9 @@ export function ProfilePage() {
                 />
               </div>
               <div>
-                <label className={labelClass}>API-token</label>
+                <label htmlFor="profile-jira-token" className={labelClass}>API-token</label>
                 <input
+                  id="profile-jira-token"
                   type="password"
                   value={jiraToken}
                   onChange={e => setJiraToken(e.target.value)}
@@ -163,8 +169,8 @@ export function ProfilePage() {
 
         </div>
 
-        {error && <p className="mt-4 text-sm text-[var(--danger)]">{error}</p>}
-        {success && <p className="mt-4 text-sm text-[var(--success)]">{success}</p>}
+        {error && <p role="alert" className="mt-4 text-sm text-[var(--danger)]">{error}</p>}
+        {success && <p role="status" className="mt-4 text-sm text-[var(--success)]">{success}</p>}
 
         <div className="border-t border-[var(--border)] py-6">
           <button
