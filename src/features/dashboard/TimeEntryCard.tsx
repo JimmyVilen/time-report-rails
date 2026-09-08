@@ -24,24 +24,27 @@ export function TimeEntryCard({ entry, date, onEdit }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: entry.id })
 
+  const [actionError, setActionError] = useState<string | null>(null)
+  const fail = (fallback: string) => (err: unknown) => {
+    setActionError(err instanceof Error ? err.message : fallback)
+  }
+
   const deleteMutation = useMutation({
     mutationFn: () => deleteTimeEntry(entry.id),
     onSuccess: invalidate,
+    onError: fail('Kunde inte radera tidsposten'),
   })
 
   const duplicateMutation = useMutation({
     mutationFn: () => duplicateTimeEntry(entry.id),
-    onSuccess: invalidate,
+    onSuccess: () => { setActionError(null); invalidate() },
+    onError: fail('Kunde inte duplicera tidsposten'),
   })
-
-  const [pushError, setPushError] = useState<string | null>(null)
 
   const pushMutation = useMutation({
     mutationFn: () => pushToJira(entry.id),
-    onSuccess: () => { setPushError(null); invalidate() },
-    onError: (err: unknown) => {
-      setPushError(err instanceof Error ? err.message : 'Kunde inte skicka till Jira')
-    },
+    onSuccess: () => { setActionError(null); invalidate() },
+    onError: fail('Kunde inte skicka till Jira'),
   })
 
   const style = {
@@ -202,8 +205,8 @@ export function TimeEntryCard({ entry, date, onEdit }: Props) {
           </div>
         </div>
       </div>
-      {pushError && (
-        <p className="px-4 pb-2 text-xs text-[var(--danger)]">{pushError}</p>
+      {actionError && (
+        <p className="px-4 pb-2 text-xs text-[var(--danger)]">{actionError}</p>
       )}
     </div>
   )

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import {
@@ -28,6 +29,7 @@ import {
   FORMAT_TEXT_COMMAND,
   $getSelection,
   $isRangeSelection,
+  type EditorState,
 } from 'lexical'
 
 const TRANSFORMERS = [
@@ -146,19 +148,6 @@ function ToolbarPlugin() {
   )
 }
 
-function OnChangePlugin({ onChange }: { onChange: (markdown: string) => void }) {
-  const [editor] = useLexicalComposerContext()
-  useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const markdown = $convertToMarkdownString(TRANSFORMERS)
-        onChange(markdown)
-      })
-    })
-  }, [editor, onChange])
-  return null
-}
-
 interface LexicalMarkdownEditorProps {
   value: string
   onChange: (markdown: string) => void
@@ -167,6 +156,16 @@ interface LexicalMarkdownEditorProps {
 }
 
 export function LexicalMarkdownEditor({ value, onChange, placeholder, label }: LexicalMarkdownEditorProps) {
+  // The official OnChangePlugin skips the initial "history-merge" update and
+  // the update Lexical emits when a content editable unmounts. Without that,
+  // an editor being replaced (e.g. via a key change) would report an empty
+  // document and wipe the parent's state right after it was prefilled.
+  const handleChange = useCallback((editorState: EditorState) => {
+    editorState.read(() => {
+      onChange($convertToMarkdownString(TRANSFORMERS))
+    })
+  }, [onChange])
+
   const initialConfig = {
     namespace: 'TimeEntryEditor',
     theme,
@@ -192,7 +191,7 @@ export function LexicalMarkdownEditor({ value, onChange, placeholder, label }: L
           />
           <HistoryPlugin />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          <OnChangePlugin onChange={onChange} />
+          <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
         </LexicalComposer>
       </div>
     </div>

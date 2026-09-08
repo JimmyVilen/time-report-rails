@@ -146,6 +146,7 @@ export function DashboardPage({ date, onDateChange }: DashboardPageProps) {
       {showForm && (
         <div className="mb-4">
             <TimeEntryForm
+              key={editEntry?.id ?? 'new'}
               date={date}
               editEntry={editEntry}
               onClose={() => { setShowForm(false); setEditEntry(null) }}
