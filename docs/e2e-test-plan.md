@@ -1,6 +1,6 @@
 # Plan: Playwright end-to-end-tester för TimeReport
 
-Status: förslag, inget är implementerat ännu.
+Status: steg 0 till 4 är genomförda. Sviten finns i `e2e/`, körs med `npm run test:e2e` och i GitHub Actions. Avsnitt 8 och 11 beskriver vad testerna hittade.
 
 ## 1. Mål och nivå
 
@@ -18,7 +18,7 @@ En egen databas `timereport_e2e_test`, aldrig `timereport` eller `timereport_tes
 1. `drop schema public cascade` + migrera från `drizzle/` (samma kod som `scripts/db/reset-test.ts`).
 2. Seeda med `scripts/db/seed-test.ts` (admin, Alice, Bob, projekt `Client`, uppgift `Implementation`, tagg `Billable`, en tidspost, en notering och ett planeringsblock på `2026-01-05`).
 
-Dessutom en andra, tom databas `timereport_e2e_setup` som bara migreras. Den behövs för att testa `/setup`-flödet (första admin-kontot), som bara går att nå när noll användare finns. Appen startas två gånger av Playwright (`webServer` som array): port 5174 mot den seedade databasen, port 5175 mot den tomma.
+Dessutom en andra, tom databas `timereport_e2e_setup_test` som bara migreras. Den behövs för att testa `/setup`-flödet (första admin-kontot), som bara går att nå när noll användare finns. Appen startas två gånger av Playwright (`webServer` som array): port 5174 mot den seedade databasen, port 5175 mot den tomma.
 
 ### 2.2 Hur databasen spinns upp
 
@@ -32,8 +32,7 @@ Miljövariabler, med förslag på fil `.env.e2e.example`:
 
 ```
 E2E_DATABASE_URL=postgresql://timereport:timereport@localhost:5433/timereport_e2e_test
-E2E_SETUP_DATABASE_URL=postgresql://timereport:timereport@localhost:5433/timereport_e2e_setup
-E2E_BASE_URL=http://localhost:5174
+E2E_SETUP_DATABASE_URL=postgresql://timereport:timereport@localhost:5433/timereport_e2e_setup_test
 ```
 
 Reset och seed sker i Playwrights `globalSetup`, så en körning är alltid reproducerbar oavsett vad förra körningen lämnade efter sig.
@@ -87,7 +86,7 @@ scripts/
 ```
 
 - Paket: `@playwright/test` som devDependency, låst version. Chromium via `npx playwright install --with-deps chromium`. Firefox och WebKit hålls utanför tills grunden är stabil.
-- Projekt i konfigen: `chromium` (parallellt, färska användare), `seeded` (serial, seedade användare), `setup` (mot port 5175), `mobile` (Pixel 7-viewport, bara navigation och dashboard).
+- Projekt i konfigen: `chromium` (parallellt, färska användare; specarna mot seedad data är rena läsningar och kan därför köras parallellt), `setup` (mot port 5175, serial), `mobile` (Pixel 7-viewport, navigation och dashboard).
 - Page objects håller selektorer på ett ställe. Selektorer prioriteras i ordningen roll/label, `aria-label`, `title`, placeholder, och sist `data-testid`.
 - `test:e2e`-skript i `package.json`:
 
@@ -211,6 +210,13 @@ Följande avvikelser upptäcktes när flödena kartlades. De åtgärdas inte i t
 4. Planeraren hämtar måndag till söndag men visar bara måndag till fredag; helgblock kan inte nås.
 5. Profilsidan kan inte tömma Jira-fält, tomma strängar skickas inte.
 6. Daglig notering-panelen stängs när innehållet hämtas om, vilket kan kasta pågående redigering.
+7. API-klienten översätter alla 401-svar till texten `Unauthorized` innan sidan ser dem, så inloggningssidan visar aldrig serverns `Invalid email or password`. Testerna verifierar det verkliga beteendet.
+8. TagInput stänger sin lista 150 ms efter blur utan att avbryta timern vid ny fokus, så två snabba val i rad kan stänga listan direkt efter att den öppnats. Page objectet väntar ut timern.
+
+Två fel var så allvarliga att sviten inte gick att få grön utan att rätta dem, och rättningarna ingår i samma branch (se avsnitt 11):
+
+9. Uppgiftslistan räknade fel antal poster och tid: subfrågorna i `src/server/routes/tasks.ts` refererade `${tasks.id}`, som Drizzle renderar okvalificerat i en select utan joins, så `task_id="id"` band till `time_entries.id`. Alla uppgifter visade samma siffra.
+10. Planeraren renderade alla block med höjd 0: API:t returnerade tider som `YYYY-MM-DD HH:mm:ss` (Postgres-format) medan klienten bara tolkar `T`-separatorn. Serverns DTO normaliserar nu till ISO-format.
 
 ## 9. Genomförande i steg
 
@@ -233,3 +239,11 @@ Planen antar följande. Säg till om något ska ändras.
 - Fynden i avsnitt 8 rättas inte inom detta arbete.
 - Bara Chromium i CI. Fler webbläsare läggs till som en matris senare om det behövs.
 - CI körs på GitHub Actions med Node 24.
+
+## 11. Utfall
+
+- 97 tester i 19 spec-filer, varav 3 `test.fixme` för fynd 1, 4 och 5. Körtid lokalt cirka 90 sekunder inklusive bygge.
+- Testbarhetsändringarna i avsnitt 5 är gjorda, plus `role="alert"`/`role="status"` på fel- och bekräftelsetexter och ett `aria-label` på markdown-editorns textyta.
+- Rättade appfel: fynd 9 (uppgiftsräknare) och 10 (planerarblock). Båda är regressioner från Hono-omskrivningen som ingen befintlig testnivå fångade; kontraktstestet för uppgifter passerade av en slump eftersom seedens första tidspost har samma id som dess uppgift.
+- Playwright är låst till 1.56.1, versionen vars Chromium finns förinstallerad i utvecklingsmiljön där sviten togs fram. Versionen kan höjas fritt; CI installerar rätt webbläsare själv.
+- `test/api-client.test.ts` var inte Prettier-formaterad, vilket skulle ha fällt `format:check` i det nya CI-jobbet. Filen är omformaterad utan andra ändringar.
