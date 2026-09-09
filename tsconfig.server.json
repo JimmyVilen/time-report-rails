@@ -11,6 +11,7 @@
     "src/server",
     "test",
     "scripts",
+    "e2e",
     "drizzle.config.ts",
     "vite.config.ts",
     "vitest.config.ts"

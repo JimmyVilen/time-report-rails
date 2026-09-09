@@ -59,6 +59,7 @@ export function TimeEntryCard({ entry, date, onEdit }: Props) {
       ref={setNodeRef}
       style={style}
       className="time-entry-card group relative"
+      data-testid="time-entry"
     >
       <div className="flex items-start gap-3 px-4 py-3.5 md:px-6 md:py-4">
         {/* Drag handle */}
@@ -206,7 +207,7 @@ export function TimeEntryCard({ entry, date, onEdit }: Props) {
         </div>
       </div>
       {actionError && (
-        <p className="px-4 pb-2 text-xs text-[var(--danger)]">{actionError}</p>
+        <p role="alert" className="px-4 pb-2 text-xs text-[var(--danger)]">{actionError}</p>
       )}
     </div>
   )

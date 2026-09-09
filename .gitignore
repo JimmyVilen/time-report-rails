@@ -7,3 +7,7 @@ dist/
 .env.*
 !.env.example
 !.env.test.example
+!.env.e2e.example
+.e2e/
+playwright-report/
+test-results/

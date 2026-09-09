@@ -129,6 +129,8 @@ export function PlannerBlockCard({ block, onEdit, onDelete, onUpdate, onConvert 
   return (
     <div
       data-planner-block
+      data-testid="planner-block"
+      data-block-id={block.id}
       className="absolute left-1 right-1 rounded select-none shadow-[0_4px_12px_rgba(27,43,38,0.06)]"
       style={{
         top: topPx,
@@ -143,6 +145,7 @@ export function PlannerBlockCard({ block, onEdit, onDelete, onUpdate, onConvert 
     >
       {/* Top resize handle */}
       <div
+        data-testid="resize-top"
         className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize z-10"
         onPointerDown={e => handleResizePointerDown(e, 'top')}
       />
@@ -176,6 +179,7 @@ export function PlannerBlockCard({ block, onEdit, onDelete, onUpdate, onConvert 
 
       {/* Bottom resize handle */}
       <div
+        data-testid="resize-bottom"
         className="absolute bottom-0 left-0 right-0 h-1.5 cursor-ns-resize z-10"
         onPointerDown={e => handleResizePointerDown(e, 'bottom')}
       />

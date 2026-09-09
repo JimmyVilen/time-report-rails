@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PGUSER: timereport
+  PGPASSWORD: timereport
+  PGHOST: localhost
+
+jobs:
+  checks:
+    name: Typecheck, lint and unit tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: timereport
+          POSTGRES_PASSWORD: timereport
+          POSTGRES_DB: timereport_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U timereport -d timereport_test"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - name: Reset and seed the unit-test database
+        run: npm run db:reset:test
+        env:
+          NODE_ENV: test
+          TEST_DATABASE_URL: postgresql://timereport:timereport@localhost:5432/timereport_test
+      - run: npm test
+        env:
+          NODE_ENV: test
+          TEST_DATABASE_URL: postgresql://timereport:timereport@localhost:5432/timereport_test
+
+  e2e:
+    name: Playwright end-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: timereport
+          POSTGRES_PASSWORD: timereport
+          POSTGRES_DB: timereport
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U timereport"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      NODE_ENV: test
+      E2E_DATABASE_URL: postgresql://timereport:timereport@localhost:5432/timereport_e2e_test
+      E2E_SETUP_DATABASE_URL: postgresql://timereport:timereport@localhost:5432/timereport_e2e_setup_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Resolve the pinned Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: browser-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Chromium system dependencies
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      # The suite creates and resets both databases itself in its global setup.
+      - run: npm run test:e2e
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+          if-no-files-found: ignore

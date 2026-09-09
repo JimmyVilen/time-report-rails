@@ -79,7 +79,28 @@ BETTER_AUTH_SECRET="replace-with-at-least-32-random-characters" docker compose u
 npm run typecheck   # app project, then the stricter server project
 npm run lint
 npm test            # set TEST_DATABASE_URL for the PostgreSQL contract tests
+npm run test:e2e    # Playwright end-to-end suite, see below
 ```
+
+### End-to-end tests (Playwright)
+
+The suite in `e2e/` drives the production build in Chromium against two
+dedicated PostgreSQL databases: `timereport_e2e_test` (reset and seeded before
+every run) and `timereport_e2e_setup_test` (schema only, for the first-run
+`/setup` flow). Both are created on demand; they only need a reachable server.
+
+```bash
+cp .env.e2e.example .env.e2e      # points at the docker compose database on :5433
+docker compose up -d db           # or: scripts/e2e/local-postgres.sh start (no Docker, port 5434)
+npx playwright install chromium   # once
+npm run test:e2e                  # builds, starts two servers, resets the databases, runs everything
+npm run test:e2e:report           # opens the HTML report of the last run
+```
+
+`E2E_SKIP_BUILD=1 npm run test:e2e` reuses `dist/` while iterating, and
+`npm run test:e2e:ui` opens Playwright's UI mode. The same command runs in
+GitHub Actions (`.github/workflows/ci.yml`). Design, coverage and known
+findings are documented in [docs/e2e-test-plan.md](docs/e2e-test-plan.md).
 
 `tsconfig.json` covers the UI; `tsconfig.server.json` adds the stricter flags
 (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,

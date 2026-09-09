@@ -34,11 +34,15 @@ const selection = {
   deletedAt: tasks.deletedAt,
   createdAt: tasks.createdAt,
   updatedAt: tasks.updatedAt,
+  // The correlated subqueries spell out `tasks.<column>` instead of
+  // interpolating `${tasks.id}`: in a single-table select Drizzle renders
+  // interpolated columns unqualified, so `task_id="id"` would bind to
+  // time_entries.id and every task would report the same figures.
   projectName: sql<
     string | null
-  >`(select name from projects where id=${tasks.projectId})`,
-  timeEntryCount: sql<number>`(select count(*)::int from time_entries where task_id=${tasks.id})`,
-  totalMinutes: sql<number>`coalesce((select sum(case when start_time is not null and end_time is not null then round(extract(epoch from (end_time-start_time))/60) else coalesce(duration_minutes,0) end)::int from time_entries where task_id=${tasks.id}),0)`,
+  >`(select name from projects where id=tasks.project_id)`,
+  timeEntryCount: sql<number>`(select count(*)::int from time_entries where task_id=tasks.id)`,
+  totalMinutes: sql<number>`coalesce((select sum(case when start_time is not null and end_time is not null then round(extract(epoch from (end_time-start_time))/60) else coalesce(duration_minutes,0) end)::int from time_entries where task_id=tasks.id),0)`,
 }
 type TaskRow = typeof tasks.$inferSelect & {
   projectName: string | null

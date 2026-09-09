@@ -51,7 +51,7 @@ export function LoginPage() {
             onChange={e => setPassword(e.target.value)}
             required
           />
-          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+          {error && <p role="alert" className="text-sm text-[var(--danger)]">{error}</p>}
           <Button type="submit" variant="primary" size="lg" loading={mutation.isPending} className="mt-2 w-full">
             Logga in
           </Button>

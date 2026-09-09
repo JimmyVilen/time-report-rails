@@ -38,6 +38,26 @@ export default tseslint.config(
     },
   },
 
+  // Playwright specs, fixtures and page objects. Type-aware but without the
+  // strictest rules: test code is deliberately explicit and repetitive.
+  {
+    files: ['e2e/**/*.ts'],
+    extends: [
+      eslint.configs.recommended,
+      ...tseslint.configs.recommendedTypeChecked,
+    ],
+    languageOptions: {
+      parserOptions: { project: ['./tsconfig.server.json'], tsconfigRootDir },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': [
+        'error',
+        { ignoreVoid: true },
+      ],
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
+
   // Application code keeps the rule set it was written against.
   {
     files: ['src/**/*.{ts,tsx}'],

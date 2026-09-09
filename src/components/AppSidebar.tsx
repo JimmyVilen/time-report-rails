@@ -131,13 +131,13 @@ export function TopNav() {
 
   return (
     <>
-      <aside className="desktop-sidebar">
+      <aside className="desktop-sidebar" data-testid="desktop-sidebar">
         <Brand />
         {navigation}
         {footer}
       </aside>
 
-      <header className="mobile-topbar">
+      <header className="mobile-topbar" data-testid="mobile-topbar">
         <Brand />
         <button className="mobile-menu-button" onClick={() => setMobileOpen(true)} aria-label="Öppna meny" aria-expanded={mobileOpen}>
           <NavIcon name="menu" />
@@ -148,7 +148,7 @@ export function TopNav() {
         <div className="mobile-drawer-backdrop" role="presentation" onMouseDown={event => {
           if (event.target === event.currentTarget) setMobileOpen(false)
         }}>
-          <div ref={drawerRef} className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+          <div ref={drawerRef} className="mobile-drawer" data-testid="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
             <div className="mobile-drawer-header">
               <Brand />
               <button ref={closeButtonRef} className="mobile-menu-button" onClick={() => setMobileOpen(false)} aria-label="Stäng meny">

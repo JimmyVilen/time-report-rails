@@ -7,13 +7,34 @@ export function productionDatabaseUrl(): string {
 }
 
 export function testDatabaseUrl(): string {
+  return guardedDatabaseUrl('TEST_DATABASE_URL')
+}
+
+/**
+ * The Playwright suite uses two databases: one that is reset and seeded before
+ * every run, and one that is only migrated so the first-run `/setup` flow can be
+ * exercised against an empty schema.
+ */
+export function e2eDatabaseUrls(): { seeded: string; empty: string } {
+  return {
+    seeded: guardedDatabaseUrl('E2E_DATABASE_URL'),
+    empty: guardedDatabaseUrl('E2E_SETUP_DATABASE_URL'),
+  }
+}
+
+function guardedDatabaseUrl(variable: string): string {
   if (process.env['NODE_ENV'] !== 'test')
     throw new Error('Refusing: NODE_ENV must equal test')
-  const value = process.env['TEST_DATABASE_URL']
+  const value = process.env[variable]
   if (!value)
     throw new Error(
-      'TEST_DATABASE_URL is required; test scripts never fall back to DATABASE_URL',
+      `${variable} is required; test scripts never fall back to DATABASE_URL`,
     )
+  return validateTestDatabaseUrl(value)
+}
+
+/** Accepts only local hosts and database names that are explicitly marked as test. */
+export function validateTestDatabaseUrl(value: string): string {
   const url = new URL(validatePostgresUrl(value))
   const host = url.hostname.toLowerCase()
   const database = url.pathname.slice(1).toLowerCase()
