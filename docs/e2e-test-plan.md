@@ -204,7 +204,7 @@ Ingen befintlig CI finns i dag, så jobbet `checks` är också nytt men billigt 
 
 Följande avvikelser upptäcktes när flödena kartlades. De åtgärdas inte i testarbetet utan skrivs som `test.fixme` med hänvisning hit, så att de blir gröna när de rättas:
 
-1. `ProjectsPage` länkar till `/projects/:id` men ingen sådan route finns. `GET /api/projects/:id`, `add-task` och `remove-task` nås inte från UI:t.
+1. `ProjectsPage` länkade till `/projects/:id` utan att någon sådan route fanns. Rättat på main (#39): namnet är inte längre en länk. `GET /api/projects/:id`, `add-task` och `remove-task` nås fortfarande inte från UI:t.
 2. Klienten (`Math.round`) och servern (avrundning till jämnt) avrundar bråkminuter olika; `0.5m` ger 1 min i formuläret men `null` i databasen.
 3. Planeraren räknar veckonummer med en egen algoritm som kan skilja sig från serverns ISO-vecka vid årsskiften.
 4. Planeraren hämtar måndag till söndag men visar bara måndag till fredag; helgblock kan inte nås.
@@ -216,7 +216,7 @@ Följande avvikelser upptäcktes när flödena kartlades. De åtgärdas inte i t
 Två fel var så allvarliga att sviten inte gick att få grön utan att rätta dem, och rättningarna ingår i samma branch (se avsnitt 11):
 
 9. Uppgiftslistan räknade fel antal poster och tid: subfrågorna i `src/server/routes/tasks.ts` refererade `${tasks.id}`, som Drizzle renderar okvalificerat i en select utan joins, så `task_id="id"` band till `time_entries.id`. Alla uppgifter visade samma siffra.
-10. Planeraren renderade alla block med höjd 0: API:t returnerade tider som `YYYY-MM-DD HH:mm:ss` (Postgres-format) medan klienten bara tolkar `T`-separatorn. Serverns DTO normaliserar nu till ISO-format.
+10. Planeraren renderade alla block med höjd 0: API:t returnerade tider som `YYYY-MM-DD HH:mm:ss` (Postgres-format) medan klienten bara tolkar `T`-separatorn. Samma rättning landade parallellt på main (#39); vid sammanslagningen behölls versionen från main.
 
 ## 9. Genomförande i steg
 
@@ -242,8 +242,8 @@ Planen antar följande. Säg till om något ska ändras.
 
 ## 11. Utfall
 
-- 97 tester i 19 spec-filer, varav 3 `test.fixme` för fynd 1, 4 och 5. Körtid lokalt cirka 90 sekunder inklusive bygge.
+- 96 tester i 19 spec-filer, varav 2 `test.fixme` för fynd 4 och 5. Körtid lokalt cirka 90 sekunder inklusive bygge.
 - Testbarhetsändringarna i avsnitt 5 är gjorda, plus `role="alert"`/`role="status"` på fel- och bekräftelsetexter och ett `aria-label` på markdown-editorns textyta.
-- Rättade appfel: fynd 9 (uppgiftsräknare) och 10 (planerarblock). Båda är regressioner från Hono-omskrivningen som ingen befintlig testnivå fångade; kontraktstestet för uppgifter passerade av en slump eftersom seedens första tidspost har samma id som dess uppgift.
+- Rättade appfel: fynd 9 (uppgiftsräknare) och 10 (planerarblock, även rättat på main). Båda är regressioner från Hono-omskrivningen som ingen befintlig testnivå fångade; kontraktstestet för uppgifter passerade av en slump eftersom seedens första tidspost har samma id som dess uppgift.
 - Playwright är låst till 1.56.1, versionen vars Chromium finns förinstallerad i utvecklingsmiljön där sviten togs fram. Versionen kan höjas fritt; CI installerar rätt webbläsare själv.
 - `test/api-client.test.ts` var inte Prettier-formaterad, vilket skulle ha fällt `format:check` i det nya CI-jobbet. Filen är omformaterad utan andra ändringar.

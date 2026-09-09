@@ -26,7 +26,7 @@ export class ProjectsPage {
 
   row(name: string): Locator {
     return this.rows.filter({
-      has: this.page.getByRole('link', { name, exact: true }),
+      has: this.page.locator('span.font-display', { hasText: name }),
     })
   }
 

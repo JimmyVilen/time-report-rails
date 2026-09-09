@@ -38,6 +38,8 @@ export function TasksPage() {
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['tasks'] })
+    // Project cards show task counts and totals derived from tasks.
+    qc.invalidateQueries({ queryKey: ['projects'] })
   }
 
   const createTagMutation = useMutation({

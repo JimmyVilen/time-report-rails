@@ -5,6 +5,7 @@ import {
   extractAdfText,
   extractIssueKey,
   formatWorklogDate,
+  JiraError,
 } from '../src/server/services/jira'
 import {
   parseTimeOnDate,
@@ -70,9 +71,15 @@ describe('Jira and CSV contracts', () => {
         ],
       }),
     ).toBe('Hello'))
+  it('never answers a Jira credential failure with a session 401', () => {
+    expect(new JiraError('bad token', 401).responseStatus).toBe(400)
+    expect(new JiraError('missing', 404).responseStatus).toBe(404)
+  })
   it('formats UTC worklog dates', () =>
     expect(formatWorklogDate(new Date('2026-09-03T10:11:12.345Z'))).toBe(
       '2026-09-03T10:11:12.345+0000',
     ))
   it('escapes CSV', () => expect(csvEscape('a,"b"')).toBe('"a,""b"""'))
+  it('quotes CSV fields containing carriage returns', () =>
+    expect(csvEscape('a\r\nb')).toBe('"a\r\nb"'))
 })

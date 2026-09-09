@@ -2,7 +2,12 @@ import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../auth/middleware'
-import { calendarDate, idParameter, iso } from '../contracts/common'
+import {
+  calendarDate,
+  exportRange,
+  idParameter,
+  iso,
+} from '../contracts/common'
 import type { Database } from '../db/client'
 import { tags, tasks, timeEntries, timeEntryTags, users } from '../db/schema'
 import { csvEscape } from '../services/csv'
@@ -495,8 +500,9 @@ function isoWeek(date: Date) {
   return Math.ceil(((value.getTime() - first.getTime()) / 86_400_000 + 1) / 7)
 }
 async function exportEntries(c: import('hono').Context<AppEnv>, db: Database) {
-  const from = c.req.query('from')
-  const to = c.req.query('to')
+  const range = exportRange(c.req.query('from'), c.req.query('to'))
+  if (!range) return c.json({ error: 'Invalid date' }, 400)
+  const { from, to } = range
   const conditions = [eq(timeEntries.userId, c.get('currentUserId'))]
   if (from) conditions.push(gte(timeEntries.date, from))
   if (to) conditions.push(lte(timeEntries.date, to))
@@ -587,7 +593,7 @@ async function pushToJira(
     return c.json(await entryDto(db, result))
   } catch (error) {
     if (error instanceof JiraError)
-      return c.json({ error: error.message }, error.status as 400)
+      return c.json({ error: error.message }, error.responseStatus as 400)
     throw error
   }
 }

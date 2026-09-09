@@ -44,7 +44,10 @@ export function DashboardPage({ date, onDateChange }: DashboardPageProps) {
 
   const reorderMutation = useMutation({
     mutationFn: reorderTimeEntries,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['time-entries', date] }),
+    // The drag handler writes the new order into the cache optimistically, so
+    // refetch on failure too or the list keeps showing an order the server
+    // never saved.
+    onSettled: () => qc.invalidateQueries({ queryKey: ['time-entries', date] }),
   })
 
   const sensors = useSensors(

@@ -4,7 +4,9 @@ import { exportNotes } from '../../api/dailyNotes'
 
 function lastWeekRange() {
   const today = new Date()
-  const dayOfWeek = today.getDay()
+  // ISO weeks run Monday–Sunday, so treat Sunday as day 7 rather than 0;
+  // otherwise a Sunday would default to the current week instead of last.
+  const dayOfWeek = today.getDay() || 7
   const lastMonday = new Date(today)
   lastMonday.setDate(today.getDate() - dayOfWeek - 6)
   const lastSunday = new Date(lastMonday)
