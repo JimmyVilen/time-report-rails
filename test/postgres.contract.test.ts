@@ -76,6 +76,48 @@ suite('PostgreSQL contracts', () => {
       ).status,
     ).toBe(404)
   })
+  it('serialises planner block clocks as ISO-8601 local date-times', async () => {
+    const response = await app.request(
+      '/api/planner-blocks?weekStart=2026-01-05',
+      { headers: { cookie } },
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual([
+      expect.objectContaining({
+        id: 1,
+        date: '2026-01-05',
+        startTime: '2026-01-05T09:00:00',
+        endTime: null,
+      }),
+    ])
+  })
+  it('rejects a planner block without a title', async () => {
+    const response = await app.request('/api/planner-blocks', {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json' },
+      body: JSON.stringify({ title: '   ', date: '2026-01-05' }),
+    })
+    expect(response.status).toBe(400)
+  })
+  it.each([
+    '/api/time-entries/export?from=not-a-date',
+    '/api/daily-notes/export?from=2026-01-01&to=2026-13-40',
+  ])('rejects export bounds that are not calendar dates: %s', async (path) => {
+    const response = await app.request(path, { headers: { cookie } })
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ error: 'Invalid date' })
+  })
+  it('exports time entries within a calendar date range', async () => {
+    const response = await app.request(
+      '/api/time-entries/export?from=2026-01-05&to=2026-01-05',
+      { headers: { cookie } },
+    )
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-disposition')).toBe(
+      'attachment; filename="tidrapport_2026-01-05_2026-01-05.csv"',
+    )
+    expect(await response.text()).toContain('2026-01-05,Client,Implementation')
+  })
   it('keeps unknown API paths as JSON 404', async () => {
     const response = await app.request('/api/not-real', { headers: { cookie } })
     expect(response.status).toBe(404)

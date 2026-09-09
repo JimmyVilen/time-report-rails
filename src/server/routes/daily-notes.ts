@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, gte, ilike, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../auth/middleware'
-import { calendarDate, iso } from '../contracts/common'
+import { calendarDate, exportRange, iso } from '../contracts/common'
 import type { Database } from '../db/client'
 import { dailyNotes } from '../db/schema'
 import { csvEscape } from '../services/csv'
@@ -18,14 +18,13 @@ const dto = (note: typeof dailyNotes.$inferSelect) => ({
 export function dailyNoteRoutes(db: Database) {
   const app = new Hono<AppEnv>()
   app.get('/export', async (c) => {
-    const from = c.req.query('from')
-    const to = c.req.query('to')
+    const range = exportRange(c.req.query('from'), c.req.query('to'))
+    if (!range) return c.json({ error: 'Invalid date' }, 400)
+    const { from, to } = range
     const uid = c.get('currentUserId')
     const conditions = [eq(dailyNotes.userId, uid)]
-    if (from && calendarDate.safeParse(from).success)
-      conditions.push(gte(dailyNotes.date, from))
-    if (to && calendarDate.safeParse(to).success)
-      conditions.push(lte(dailyNotes.date, to))
+    if (from) conditions.push(gte(dailyNotes.date, from))
+    if (to) conditions.push(lte(dailyNotes.date, to))
     const rows = await db
       .select()
       .from(dailyNotes)

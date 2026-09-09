@@ -68,7 +68,7 @@ export function taskRoutes(db: Database, jira = new JiraClient()) {
       return c.json({ ...issue, issueKey: key })
     } catch (error) {
       if (error instanceof JiraError)
-        return c.json({ error: error.message }, error.status as 400)
+        return c.json({ error: error.message }, error.responseStatus as 400)
       throw error
     }
   })
